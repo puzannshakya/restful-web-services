@@ -6,7 +6,7 @@ package com.assignment.departmentstorequeues;
 /**
  * Class for DepartmentStore
  *
- * @author abc
+ * @author Ashish
  */
 public class DepartmentStore {
     private ListQueue<Customer> customerLine;

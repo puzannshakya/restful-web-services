@@ -3,7 +3,7 @@ package com.assignment.postfixcalculator;
 /**
  * Class for PostfixCalculator
  *
- * @author abc
+ * @author Ashish
  */
 public class PostfixCalculator {
      private LinkedStack<Integer> stack;
@@ -91,6 +91,7 @@ public class PostfixCalculator {
 
         }
         System.out.println("Final Result is " + stack.peek());
+        result = stack.peek();
         return result;
     }
 }

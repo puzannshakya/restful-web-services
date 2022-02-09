@@ -3,7 +3,7 @@ package com.assignment.departmentstorequeues;
 /**
  * Class for Customer
  *
- * @author abc
+ * @author Ashish
  */
 public class Customer {
     private String name;

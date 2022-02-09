@@ -3,7 +3,7 @@ package com.assignment.departmentstorequeues;
 /**
  * Class for CashRegister
  *
- * @author abc
+ * @author Ashish
  */
 public class CashRegister {
     private int number;

@@ -1,12 +1,17 @@
 package com.assignment;
 
-import java.util.Objects;
 
+/**
+ * Class for Move
+ */
 public class Move {
     private int column;
     private int row;
     private BoardStatus boardStatus;
 
+    /**
+     * Constructor for Move
+     */
     public Move(){
 
     }

@@ -2,27 +2,22 @@ package com.assignment;
 
 import java.util.Arrays;
 
+/**
+ * Class for Board
+ */
 public class Board {
     private char[][] square;
 
+    /**
+     * Constructor for Board
+     */
     public Board(){
-         square=new char[3][3];
-         /*for(int i =0 ; i<=2 ;i++){
+        square=new char[3][3];
+         for(int i =0 ; i<=2 ;i++){
              for (int j=0 ; j<=2 ; j++){
                  setSquare(j,i,' ');
              }
-         }*/
-
-
-         square[0][0]=' ';
-         square[0][1]=' ';
-         square[0][2]=' ';
-         square[1][0]=' ';
-         square[1][1]=' ';
-         square[1][2]=' ';
-         square[2][0]=' ';
-         square[2][1]=' ';
-         square[2][2]=' ';
+         }
     }
     public char getSquare(int column , int row){
 
@@ -34,22 +29,33 @@ public class Board {
     }
 
 
+    /**
+     * Draws the current state of the Tic Tac Toe Board
+     */
     public void draw(){
 
         System.out.println( " " + square[0][0] + " | "
                 + square[0][1] + " | " + square[0][2]
-                );
+        );
         System.out.println("---+---+---");
         System.out.println( " " + square[1][0] + " | "
                 + square[1][1] + " | " + square[1][2]
-                );
+        );
         System.out.println("---+---+---");
         System.out.println(" " + square[2][0] + " | "
                 + square[2][1] + " | " + square[2][2]
-                );
+        );
 
     }
 
+    /**
+     * checks the state of the board and returns one of the BoardStatus enum values:
+     * o	UNFINISHED – if the board is not full and there is not a winner
+     * o	X_WINS – if there are three ‘X’ squares in a row (horizontally, vertically or diagonally)
+     * o	O_WINS – if there are three ‘O’ squares in a row (horizontally, vertically or diagonally)
+     * o	DRAW – if the board is full and there is no winner
+     * @return BoardStatus
+     */
     public BoardStatus determineBoardStatus(){
         BoardStatus boardStatus;
         Boolean boardFull = Boolean.TRUE;
@@ -93,41 +99,47 @@ public class Board {
             }
             //For X winner
             if (line.equals("XXX")) {
-                 boardStatus = BoardStatus.X_WINS;
-                 return  boardStatus;
+                boardStatus = BoardStatus.X_WINS;
+                return  boardStatus;
             }
 
             // For O winner
-             if (line.equals("OOO")) {
+            if (line.equals("OOO")) {
                 boardStatus = BoardStatus.O_WINS;
-                 return  boardStatus;
+                return  boardStatus;
             }
         }
 
-            for(int i =0 ; i<=2 ;i++){
-                for (int j=0 ; j<=2 ; j++){
-                    if(square[i][j] == ' ')
-                    {
-                        boardFull = Boolean.FALSE;
-                        break;
-                    }
+        for(int i =0 ; i<=2 ;i++){
+            for (int j=0 ; j<=2 ; j++){
+                if(square[i][j] == ' ')
+                {
+                    boardFull = Boolean.FALSE;
+                    break;
                 }
             }
-            if(boardFull){
-                return BoardStatus.DRAW;
-            }else{
-                return  BoardStatus.UNFINISHED;
-            }
+        }
+        if(boardFull){
+            return BoardStatus.DRAW;
+        }else{
+            return  BoardStatus.UNFINISHED;
+        }
 
     }
 
+    /**
+     * this is the method that will be recursively called for the computer opponent
+     * as you simulate all possible outcomes of the game and determine the best possible Move to make.
+     * @param currentPlayer
+     * @return Move
+     */
     public Move makeAMove(char currentPlayer){
         Move moveOutCome = new Move();
         Move tempOutCome = new Move();
         Boolean fullFlag = Boolean.TRUE;
         //char[][] tempSquare = this.square;
         //System.out.println("Current Player :" + currentPlayer);
-       // System.out.println("Current Draw :");
+        // System.out.println("Current Draw :");
 
         /**
          * Check for Any Immediate win
@@ -212,18 +224,18 @@ public class Board {
             for (int column = 0; column <= 2; column++) {
                 if(getSquare(column,row) != ' ') continue;
                 //Reach here  only if the  square[i][j] position is blank
-                 fullFlag = Boolean.FALSE;
+                fullFlag = Boolean.FALSE;
 
                 setSquare(column,row,currentPlayer);
                 //System.out.println("setting " + currentPlayer + " in " + row + "," + column);
-               //draw();
+                //draw();
 
                 if(currentPlayer == 'X' && determineBoardStatus().equals(BoardStatus.X_WINS)){
                     setSquare(column,row,' ');
                     moveOutCome.setColumn(column);
                     moveOutCome.setRow(row);
                     moveOutCome.setBoardStatus(BoardStatus.X_WINS);
-                  //  System.out.println("X_Wins : move " + moveOutCome.toString());
+                    //  System.out.println("X_Wins : move " + moveOutCome.toString());
                     return moveOutCome;
                 }
 
@@ -244,14 +256,17 @@ public class Board {
                     return moveOutCome;
                 }
 
-                if(currentPlayer == 'X'){
-                    //System.out.println("Calling as :" + currentPlayer);
-                    tempOutCome = makeAMove('O');
-                }else{
-                    //System.out.println("Calling as :" + currentPlayer);
-                    tempOutCome = makeAMove('X');
+                if(determineBoardStatus().equals(BoardStatus.UNFINISHED)){
+                    if(currentPlayer == 'X'){
+                        //System.out.println("Calling as :" + currentPlayer);
+                        tempOutCome = makeAMove('O');
+                    }else{
+                        //System.out.println("Calling as :" + currentPlayer);
+                        tempOutCome = makeAMove('X');
+                    }
                 }
-               // System.out.println("tempOutCome : " +  tempOutCome + " in " + row + "," + column + "," + currentPlayer);
+
+                // System.out.println("tempOutCome : " +  tempOutCome + " in " + row + "," + column + "," + currentPlayer);
                 if(currentPlayer == 'X' && tempOutCome.getBoardStatus().equals(BoardStatus.O_WINS)){
                     setSquare(column,row,' ');
                     moveOutCome.setColumn(tempOutCome.getColumn());
@@ -279,11 +294,11 @@ public class Board {
             }
         }
 
-     if(fullFlag){
-         Move movedraw= new Move();
-         movedraw.setBoardStatus(BoardStatus.DRAW);
-         return  movedraw;
-     }
+        if(fullFlag){
+            Move movedraw= new Move();
+            movedraw.setBoardStatus(BoardStatus.DRAW);
+            return  movedraw;
+        }
 
         return  moveOutCome;
     }

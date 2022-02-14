@@ -3,6 +3,9 @@ package com.assignment;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+/**
+ * Class for TicTacToe
+ */
 public class TicTacToe {
     private static Board board;
 
@@ -17,7 +20,9 @@ public class TicTacToe {
         System.out.println(board.determineBoardStatus());
         board.draw();
 
-
+        /**
+         * Start of the Program
+         */
 
         System.out.println("Tic Tac Toe");
         System.out.println("1. Play against human");
@@ -25,12 +30,33 @@ public class TicTacToe {
         System.out.println("3. Play against computer (Computer: X, Human: O)");
         System.out.println("4. End program");
 
-        numInput = in.nextInt();
-        if (!(numInput > 0 && numInput <= 4)) {
-            System.out.println(
-                    "Invalid input; Please re-enter from 1-4 only");
+        /**
+         * Repeat Until user inputs from 1-4 only
+         */
+        while(true){
+            Boolean noError = Boolean.TRUE;
+            try {
+                numInput = in.nextInt();
+                if (!(numInput > 0 && numInput <= 4)) {
+                    System.err.println("Invalid input; Please re-enter from 1-4 only");
+                    in.nextLine();
+                    continue;
+                }
+
+            }catch (InputMismatchException e) {
+                System.err.println("Invalid input; Please re-enter from 1-4 only");
+                in.nextLine();
+                continue;
+            }
+            if(noError){
+                break;
+            }
         }
 
+
+        /**
+         *  Check for Input Conditions
+         */
 
         switch(numInput){
 
@@ -51,11 +77,20 @@ public class TicTacToe {
 
     }
 
+    /**
+     * Play Against Human Board
+     * @param board
+     * @param in
+     */
     public static  void playAgainstHuman(Board board,Scanner in){
         char turn = 'X';
 
         System.out.println("Human opponent");
         board.draw();
+
+        /**
+         * Play till BoardStatus is Unfinished
+         */
         while(board.determineBoardStatus().equals(BoardStatus.UNFINISHED)){
             int row=0;
             int column=0;
@@ -110,6 +145,11 @@ public class TicTacToe {
         System.out.println(board.determineBoardStatus());
     }
 
+    /**
+     * play As Human X and Computer O Board
+     * @param board
+     * @param in
+     */
     public static  void playAsHumanXComputerO(Board board,Scanner in){
         char turn = 'X';
 
@@ -163,6 +203,9 @@ public class TicTacToe {
                 System.out.println("Computer: O");
                 Board tempBoard = temporaryBoard(board);
                 //board.draw();
+                /**
+                 * Call MakeAMove Method for Computer
+                 */
                 move = tempBoard.makeAMove(turn);
               //  board.setSquare(move.getColumn(),move.getRow(),turn);
                 //System.out.println("returned from makeamove");
@@ -185,6 +228,11 @@ public class TicTacToe {
 
     }
 
+    /**
+     * play As Human O And Computer X Board
+     * @param board
+     * @param in
+     */
     public static  void playAsHumanOComputerX(Board board,Scanner in){
         char turn = 'X';
         System.out.println("Computer: X, Human: O");
@@ -237,6 +285,9 @@ public class TicTacToe {
                 System.out.println("Computer: X");
                 Board tempBoard = temporaryBoard(board);
                 //board.draw();
+                /**
+                 * Call MakeAMove Method for Computer
+                 */
                 move = tempBoard.makeAMove(turn);
                 //  board.setSquare(move.getColumn(),move.getRow(),turn);
                 //System.out.println("returned from makeamove");
@@ -268,6 +319,8 @@ public class TicTacToe {
         }
         return tempBoard;
     }
+
+
 
 
 }

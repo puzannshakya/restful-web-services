@@ -1,0 +1,182 @@
+create or replace view iplLeagueProgression as 
+
+select    t_team_name as Name, 
+            fn_pointsProgression(t_id,1,'L') as "1",
+             fn_pointsProgression(t_id,2,'L') as "2",
+             fn_pointsProgression(t_id,3,'L') as "3",
+             fn_pointsProgression(t_id,4,'L') as "4",
+             fn_pointsProgression(t_id,5,'L') as "5",
+             fn_pointsProgression(t_id,6,'L') as "6",
+             fn_pointsProgression(t_id,7,'L') as "7",
+             fn_pointsProgression(t_id,8,'L') as "8",
+             fn_pointsProgression(t_id,9,'L') as "9",
+             fn_pointsProgression(t_id,10,'L') as "10",
+             fn_pointsProgression(t_id,11,'L') as "11",
+             fn_pointsProgression(t_id,12,'L') as "12",
+             fn_pointsProgression(t_id,13,'L') as "13",
+             fn_pointsProgression(t_id,14,'L') as "14",
+             fn_pointsProgression(t_id,14,'Q1E') as Q1E,
+             fn_pointsProgression(t_id,14,'Q2') as Q2,
+             fn_pointsProgression(t_id,14,'F') as F
+          from iplTeams;
+
+			
+			
+			
+			
+			
+			
+			
+-----------------------------------------------
+
+
+select * from iplLeagueProgression ;			
+			
+			
+	
+----------------------------------------------------------------------------------------------------
+---function to calculate points progression
+create or replace function fn_pointsProgression(t_id number, numMatch number , matchtype varchar) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+matchCount number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+wins number := 0;
+
+draws number := 0;
+points varchar(20);
+
+matchResult varchar(20);
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if ( matchtype='L' ) then 
+
+if(temp_curWins.m_matchtype = 'L') then 
+
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+matchCount := matchCount +1;
+
+exit when matchCount >= numMatch;
+ 
+ 
+  
+ elsif(matchtype ='Q1E' and temp_curWins.m_matchtype = 'Q1' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='Q1E' and temp_curWins.m_matchtype = 'E' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='Q2' and temp_curWins.m_matchtype = 'Q2' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='F' and temp_curWins.m_matchtype = 'F' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if; 
+ 
+
+ 
+ end if;
+end loop;
+
+
+if ( matchtype='L' ) then 
+points := 2*wins + draws;
+ end if;
+return points;
+
+end;
+
+
+	
+			
+			
+			

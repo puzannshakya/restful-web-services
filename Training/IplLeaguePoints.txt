@@ -1,0 +1,296 @@
+-------------View for League Points
+
+create or replace view iplLeaguePoints as 
+
+select    t_team_name as NAME , 
+          14 as Pld, 
+           fn_wins(t_id) as 1,
+            fn_lose(t_id) as L,
+            fn_draws(t_id) as T,
+           fn_points(t_id) as Pts,
+           fn_nrr(t_id)  as NRR 
+            from iplTeams;
+
+
+
+
+--------
+
+select * from iplLeaguePoints order by Pts desc,NRR desc;
+
+begin 
+ dbms_output.put_line(fn_nrr(1));
+ end;
+
+----------------------------------------------------------------------------------
+
+----------------function to calculate wins
+create or replace function fn_wins(t_id number) 
+return number
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+wins number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+end if;
+
+end loop;
+-- dbms_output.put_line(wins);
+return wins;
+
+end;
+
+
+
+-----------------------------------------------------------------------------------
+
+----function to calculate lose
+
+
+
+create or replace function fn_lose(t_id number) 
+return number
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+lose number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor < runsAgainst) then
+lose := lose +1;
+
+end if;
+
+end if;
+
+end loop;
+
+return lose;
+
+end;
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate draws
+create or replace function fn_draws(t_id number) 
+return number
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+draws number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+end loop;
+
+return draws;
+
+end;
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate points
+create or replace function fn_points(t_id number) 
+return number
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+wins number := 0;
+
+draws number := 0;
+points number := 0 ;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+
+
+
+
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+
+
+end loop;
+
+points := 2*wins + draws;
+return points;
+
+end;
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate nrr
+create or replace function fn_nrr(t_id number) 
+return number
+is
+
+
+ballsFor number := 0;
+ballsAgainst number := 0 ;
+
+totalBallsFor number := 0;
+totalBallsAgainst number := 0;
+
+oversFor decimal(6,3);
+oversAgainst decimal(6,3);
+
+
+m_fi_over_cal decimal(6,3);
+m_si_over_cal decimal(6,3);
+
+runsFor number :=0;
+runsAgainst number := 0;
+
+runsForTotal number :=0;
+runsAgainstTotal number := 0;
+
+nrr decimal(6,3);
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+m_fi_over_cal :=  temp_curWins.m_fi_over;
+m_si_over_cal := temp_curWins.m_si_over;
+
+
+if(temp_curWins.m_fi_wicket = 10) then
+m_fi_over_cal := 20.0;
+end if;
+
+if(temp_curWins.m_si_wicket = 10) then
+m_si_over_cal := 20.0;
+
+end if;
+
+
+
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+oversFor := m_fi_over_cal;
+runsAgainst := temp_curWins.m_si_run;
+oversAgainst := m_si_over_cal;
+else
+runsFor :=  temp_curWins.m_si_run;
+oversFor := m_si_over_cal;
+runsAgainst := temp_curWins.m_fi_run;
+oversAgainst := m_fi_over_cal;
+end if;
+
+
+ballsFor := trunc(oversFor) * 6 + (oversFor-trunc(oversFor))*10;
+ballsAgainst := trunc(oversAgainst) * 6 + (oversAgainst-trunc(oversAgainst))*10;
+
+
+totalBallsFor := totalBallsFor + ballsFor;
+totalBallsAgainst := totalBallsAgainst + ballsAgainst;
+
+
+runsForTotal := runsForTotal + runsFor;
+runsAgainstTotal := runsAgainstTotal + runsAgainst;
+
+
+end if;
+
+
+
+end loop;
+
+
+
+dbms_output.put_line(' ');
+nrr := (runsForTotal / totalBallsFor) * 6 - (runsAgainstTotal/totalBallsAgainst) * 6;
+
+dbms_output.put_line(nrr);
+return trunc(nrr,4);
+
+end;
+
+
+
+
+

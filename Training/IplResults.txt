@@ -1,0 +1,97 @@
+----------------------First 28 League results ------------
+
+create or replace view iplMatchResultsFirst28 as
+
+select itf.t_team_name || ' ' || chr(10) || imr.m_fi_run || '/' || imr.m_fi_wicket ||' (' ||imr.m_fi_over || ' overs' || ')' AS batting , ' V  ' AS vs,
+
+its.t_team_name || ' ' || Chr(10) || imr.m_si_run || '/' ||imr.m_si_wicket ||' (' ||imr.m_si_over || ' overs' || ')' AS bowling ,
+ fn_winner(imr.m_fi_id  ,imr.m_fi_run , imr.m_fi_wicket  , imr.m_si_id  ,imr.m_si_run ,imr.m_si_wicket, imr.m_dls_flag ) as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 1 and 28
+ORDER BY imr.m_id ;
+
+
+
+
+
+
+--------------last 28 league results
+create or replace view iplMatchResultsLast28 as
+
+select itf.t_team_name || ' ' || chr(10) || imr.m_fi_run || '/' || imr.m_fi_wicket ||' (' ||imr.m_fi_over || ' overs' || ')' AS batting , ' V  ' AS vs,
+
+its.t_team_name || ' ' || Chr(10) || imr.m_si_run || '/' ||imr.m_si_wicket ||' (' ||imr.m_si_over || ' overs' || ')' AS bowling ,
+ fn_winner(imr.m_fi_id  ,imr.m_fi_run , imr.m_fi_wicket  , imr.m_si_id  ,imr.m_si_run ,imr.m_si_wicket, imr.m_dls_flag ) as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 29 and 56
+ORDER BY imr.m_id ;
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---function to print  results
+ create or replace function fn_winner( m_fi_id number ,m_fi_run number, m_fi_wicket number , m_si_id number ,m_si_run number, m_si_wicket number, m_dls_flag number)
+ return varchar
+ is
+ c_first_team varchar(40);
+c_second_team varchar(40);
+c_winning_team varchar(40);
+c_winning_run  number;
+c_winning_wicket number;
+c_winner_flag number;
+ begin 
+ 
+ if(m_fi_run > m_si_run) then
+c_winner_flag := 1;
+elsif(m_si_run > m_fi_run) then
+c_winner_flag := 0;
+end if;
+
+select ilp.t_team_name into c_second_team from iplTeams ilp where ilp.t_id=m_si_id;
+select ilp.t_team_name into c_first_team from iplTeams ilp where ilp.t_id=m_fi_id;
+
+
+
+case c_winner_flag
+when 0 then
+select ilp.t_team_name into c_winning_team from iplTeams ilp where ilp.t_id=m_si_id;
+c_winning_wicket := 10 - m_si_wicket;
+if(m_dls_flag=0) then 
+return  c_winning_team || ' won by  ' || c_winning_wicket ||   ' wickets';
+else
+return c_winning_team || ' won by  ' || c_winning_wicket ||  ' wickets(DLS METHOD)';
+
+end if;
+
+
+
+when 1 then
+select ilp.t_team_name into c_winning_team from iplTeams ilp where ilp.t_id=m_fi_id;
+c_winning_run := m_fi_run - m_si_run;
+if(m_dls_flag=0) then 
+return c_winning_team || ' won by  ' || c_winning_run ||' runs';
+else
+return c_winning_team || ' won by  ' || c_winning_run ||' runs(DLS METHOD)';
+
+end if;
+
+
+
+
+end case;
+
+ 
+ end;
+ 
+ 

@@ -1,0 +1,65 @@
+create or replace view iplMatchSummary as 
+
+select    t_team_name as Name, 
+            fn_matchSummary(t_id,1) as CSK,
+			fn_matchSummary(t_id,2) as DD,
+			fn_matchSummary(t_id,3) as KXIP,
+			fn_matchSummary(t_id,4) as KKR,
+			fn_matchSummary(t_id,5) as MI,
+			fn_matchSummary(t_id,6) as RR,
+			fn_matchSummary(t_id,7) as RCB,
+			fn_matchSummary(t_id,8) as SRH
+            from iplTeams;
+
+			
+---------------------------------------------------------------------------------------------------------------------
+
+select * from iplMatchSummary;
+
+
+
+
+
+
+
+-------------------------------- function for match summary
+
+
+create or replace function fn_matchSummary(home_id number, away_id number) 
+return varchar
+is
+runsFor number :=0;
+runsAgainst number := 0;
+winnerId number  ;
+winnerSlug varchar(10);
+CURSOR c_matchSummary is
+			
+	select * from iplMatchRecords where m_matchtype='L' and ((m_fi_id = home_id and m_fi_ha = 'H'  ) or ( m_si_id = home_id and m_si_ha = 'H')) and  ((m_fi_id = away_id and m_fi_ha = 'A'  ) or ( m_si_id = away_id and m_si_ha = 'A'));
+
+begin
+for temp_curSummary in c_matchSummary
+Loop
+
+if(temp_curSummary.m_fi_id = home_id) then
+runsFor :=  temp_curSummary.m_fi_run;
+runsAgainst := temp_curSummary.m_si_run;
+else
+runsFor :=  temp_curSummary.m_si_run;
+runsAgainst := temp_curSummary.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+winnerId := home_id;
+else
+winnerId := away_id;
+end if;
+end loop;
+
+select t_team_name_slug into winnerSlug  from iplTeams where t_id = winnerId;
+return winnerSlug;
+
+end;
+
+
+	

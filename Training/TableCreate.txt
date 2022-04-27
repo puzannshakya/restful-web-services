@@ -1,0 +1,100 @@
+----Table for League Points
+
+create table iplLeaguePoints( 
+t_id number constraint ipl_team_pk primary key , 
+t_team_name  varchar(60), 
+t_team_name_slug   varchar(20), 
+t_match_played       number, 
+t_win number, 
+t_draw  number, 
+t_lost  number, 
+t_points   number, 
+t_runs_for number,
+t_balls_for number,
+t_runs_against number,
+t_balls_against number,
+t_nrr  decimal(6,3));
+
+
+
+---Table for Match Records
+create table iplMatchRecords( 
+m_id number constraint ipl_match_pk primary key, 
+m_fi_id number, 
+m_fi_run number, 
+m_fi_over decimal(6,3), 
+m_fi_wicket number, 
+m_fi_ha varchar(20),
+m_si_id number, 
+m_si_run number, 
+m_si_over decimal (6,3), 
+m_si_wicket number,
+m_si_ha varchar(20),
+m_dls_flag number,
+m_matchtype varchar(10) );
+
+
+
+----------Table for LeagueProgresssion
+create table leagueProgression( 
+lp_id number constraint ipl_lp_pk primary key, 
+lp_team_id number,
+lp_1 varchar(20),
+lp_2 varchar(20),
+lp_3 varchar(20),
+lp_4 varchar(20),
+lp_5 varchar(20),
+lp_6 varchar(20),
+lp_7 varchar(20),
+lp_8 varchar(20),
+lp_9 varchar(20),
+lp_10 varchar(20),
+lp_11 varchar(20),
+lp_12 varchar(20),
+lp_13 varchar(20),
+lp_14 varchar(20),
+lp_Q1E varchar(20),
+lp_Q2 varchar(20),
+lp_F varchar(20));
+
+
+
+--------------------------Table for matchSummary-
+create table matchSummary( 
+ms_id number constraint ipl_ms_pk primary key, 
+ms_team_id number,
+ms_csk varchar(20),
+ms_dd varchar(20),
+ms_kxip varchar(20),
+ms_kkr varchar(20),
+ms_mi varchar(20),
+ms_rr varchar(20),
+ms_rcb varchar(20),
+ms_srh varchar(20));
+
+Create sequence iplLeaguePointsSeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+Create sequence iplMatchRecordsSeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+
+Create sequence leagueProgressionSeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+Create sequence matchSummarySeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+
+
+
+
+

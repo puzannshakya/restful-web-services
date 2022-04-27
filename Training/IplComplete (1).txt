@@ -1,0 +1,586 @@
+drop package pckIPL;
+
+---------------------------------------------------
+create package pckIPL as
+function fn_winner( m_fi_id number ,m_fi_run number, m_fi_wicket number , m_si_id number ,m_si_run number, m_si_wicket number, m_dls_flag number) return varchar;
+function fn_wins(t_id number) return varchar;
+ function fn_lose(t_id number) return varchar ;
+ function fn_draws(t_id number) return varchar ;
+  function fn_points(t_id number) return varchar ;
+   function fn_nrr(t_id number) return varchar ;
+    function fn_pointsProgression(t_id number, numMatch number , matchtype varchar) return varchar ;
+	function fn_matchSummary(home_id number, away_id number) return varchar ;
+	function fn_teamname(team_id number ) return varchar ;
+	function fn_teamnameslug(team_id number ) return varchar ;
+	function fn_score( match_id number ,t_id number ) return varchar;
+end pckIpl;
+
+
+create or replace package body pckIPL as
+
+
+--------function to print  results
+function fn_winner( m_fi_id number ,m_fi_run number, m_fi_wicket number , m_si_id number ,m_si_run number, m_si_wicket number, m_dls_flag number)
+ return varchar
+ is
+ c_first_team varchar(40);
+c_second_team varchar(40);
+c_winning_team varchar(40);
+c_winning_run  number;
+c_winning_wicket number;
+c_winner_flag number;
+ begin 
+ 
+ 
+ ----------checking who won(first to bat or second to bat ) ---
+ if(m_fi_run > m_si_run) then
+c_winner_flag := 1;
+elsif(m_si_run > m_fi_run) then
+c_winner_flag := 0;
+end if;
+
+select ilp.t_team_name into c_second_team from iplTeams ilp where ilp.t_id=m_si_id;
+select ilp.t_team_name into c_first_team from iplTeams ilp where ilp.t_id=m_fi_id;
+
+
+
+case c_winner_flag
+when 0 then
+select ilp.t_team_name into c_winning_team from iplTeams ilp where ilp.t_id=m_si_id;
+c_winning_wicket := 10 - m_si_wicket;
+if(m_dls_flag=0) then 
+return  c_winning_team || ' won by  ' || c_winning_wicket ||   ' wickets';
+else
+return c_winning_team || ' won by  ' || c_winning_wicket ||  ' wickets(DLS METHOD)';
+
+end if;
+
+
+
+when 1 then
+select ilp.t_team_name into c_winning_team from iplTeams ilp where ilp.t_id=m_fi_id;
+c_winning_run := m_fi_run - m_si_run;
+if(m_dls_flag=0) then 
+return c_winning_team || ' won by  ' || c_winning_run ||' runs';
+else
+return c_winning_team || ' won by  ' || c_winning_run ||' runs(DLS METHOD)';
+
+end if;
+
+
+
+
+end case;
+
+ end  fn_winner;
+ 
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------function to calculate wins
+function fn_wins(t_id number) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+wins number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+end if;
+
+end loop;
+-- dbms_output.put_line(wins);
+return wins;
+
+end fn_wins;
+
+
+
+----------------------------------------------------------------------------------- 
+ ----function to calculate lose
+
+
+
+ function fn_lose(t_id number) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+lose number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor < runsAgainst) then
+lose := lose +1;
+
+end if;
+
+end if;
+
+end loop;
+
+return lose;
+
+end fn_lose;
+
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate draws
+function fn_draws(t_id number) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+draws number := 0;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+end loop;
+
+return draws;
+
+end fn_draws;
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate points
+ function fn_points(t_id number) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+wins number := 0;
+
+draws number := 0;
+points number := 0 ;
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+
+
+
+
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+
+
+end loop;
+
+points := 2*wins + draws;
+return points;
+
+end fn_points;
+
+-----------------------------------------------------------------------------------------------------------------
+---function to calculate nrr
+ function fn_nrr(t_id number) 
+return varchar
+is
+
+
+ballsFor number := 0;
+ballsAgainst number := 0 ;
+
+totalBallsFor number := 0;
+totalBallsAgainst number := 0;
+
+oversFor decimal(6,3);
+oversAgainst decimal(6,3);
+
+
+m_fi_over_cal decimal(6,3);
+m_si_over_cal decimal(6,3);
+
+runsFor number :=0;
+runsAgainst number := 0;
+
+runsForTotal number :=0;
+runsAgainstTotal number := 0;
+
+nrr decimal(6,3);
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+if(temp_curWins.m_matchtype = 'L') then 
+m_fi_over_cal :=  temp_curWins.m_fi_over;
+m_si_over_cal := temp_curWins.m_si_over;
+
+
+
+
+-------------If any team gets bowled out , over for them will be 20 overs
+if(temp_curWins.m_fi_wicket = 10) then
+m_fi_over_cal := 20.0;
+end if;
+
+if(temp_curWins.m_si_wicket = 10) then
+m_si_over_cal := 20.0;
+
+end if;
+
+
+
+
+if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+oversFor := m_fi_over_cal;
+runsAgainst := temp_curWins.m_si_run;
+oversAgainst := m_si_over_cal;
+else
+runsFor :=  temp_curWins.m_si_run;
+oversFor := m_si_over_cal;
+runsAgainst := temp_curWins.m_fi_run;
+oversAgainst := m_fi_over_cal;
+end if;
+
+
+ballsFor := trunc(oversFor) * 6 + (oversFor-trunc(oversFor))*10;
+ballsAgainst := trunc(oversAgainst) * 6 + (oversAgainst-trunc(oversAgainst))*10;
+
+
+totalBallsFor := totalBallsFor + ballsFor;
+totalBallsAgainst := totalBallsAgainst + ballsAgainst;
+
+
+runsForTotal := runsForTotal + runsFor;
+runsAgainstTotal := runsAgainstTotal + runsAgainst;
+
+
+end if;
+
+
+
+end loop;
+
+
+
+nrr := (runsForTotal / totalBallsFor) * 6 - (runsAgainstTotal/totalBallsAgainst) * 6;
+
+
+return trunc(nrr,4);
+
+end fn_nrr;
+
+
+
+----------------------------------------------------------------------------------------------------
+---function to calculate points progression
+ function fn_pointsProgression(t_id number, numMatch number , matchtype varchar) 
+return varchar
+is
+
+runsFor number :=0;
+runsAgainst number := 0;
+matchCount number := 0;
+CURSOR c_matchResultsWins is
+select * from iplMatchRecords where m_fi_id = t_id or m_si_id = t_id;
+
+wins number := 0;
+
+draws number := 0;
+points varchar(20);
+
+matchResult varchar(20);
+begin 
+for temp_curWins in c_matchResultsWins
+Loop
+
+---condition for checking if the match was a league type or of further round
+if ( matchtype='L' ) then 
+
+if(temp_curWins.m_matchtype = 'L') then 
+
+
+if(runsFor > runsAgainst) then
+wins := wins +1;
+
+end if;
+
+
+if(runsFor = runsAgainst) then
+draws := draws +1;
+
+end if;
+
+end if;
+
+matchCount := matchCount +1;
+
+exit when matchCount >= numMatch;
+ 
+ 
+  
+ elsif(matchtype ='Q1E' and temp_curWins.m_matchtype = 'Q1' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='Q1E' and temp_curWins.m_matchtype = 'E' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='Q2' and temp_curWins.m_matchtype = 'Q2' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if;
+
+
+elsif(matchtype ='F' and temp_curWins.m_matchtype = 'F' ) then 
+ 
+
+
+ if(temp_curWins.m_fi_id = t_id ) then
+runsFor :=  temp_curWins.m_fi_run;
+runsAgainst := temp_curWins.m_si_run;
+else
+runsFor :=  temp_curWins.m_si_run;
+runsAgainst := temp_curWins.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+points := 'W' ;
+
+else 
+points := 'L';
+end if; 
+ 
+
+ 
+ end if;
+end loop;
+
+
+if ( matchtype='L' ) then 
+points := 2*wins + draws;
+ end if;
+return points;
+
+end fn_pointsProgression;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- function for match summary
+------------------------Match Summary
+
+function fn_matchSummary(home_id number, away_id number) 
+return varchar
+is
+runsFor number :=0;
+runsAgainst number := 0;
+winnerId number  ;
+winnerSlug varchar(10);
+CURSOR c_matchSummary is
+			
+	select * from iplMatchRecords where m_matchtype='L' and ((m_fi_id = home_id and m_fi_ha = 'H'  ) or ( m_si_id = home_id and m_si_ha = 'H')) and  ((m_fi_id = away_id and m_fi_ha = 'A'  ) or ( m_si_id = away_id and m_si_ha = 'A'));
+
+begin
+for temp_curSummary in c_matchSummary
+Loop
+
+if(temp_curSummary.m_fi_id = home_id) then
+runsFor :=  temp_curSummary.m_fi_run;
+runsAgainst := temp_curSummary.m_si_run;
+else
+runsFor :=  temp_curSummary.m_si_run;
+runsAgainst := temp_curSummary.m_fi_run;
+end if;
+
+
+if(runsFor > runsAgainst) then
+winnerId := home_id;
+else
+winnerId := away_id;
+end if;
+end loop;
+
+select t_team_name_slug into winnerSlug  from iplTeams where t_id = winnerId;
+return winnerSlug;
+
+end fn_matchSummary;
+
+-----------------------------------------------------------------------------
+--fucntion to get team name
+function fn_teamname(team_id number ) return varchar  is 
+t_name varchar(40);
+begin
+select t_team_name into t_name from iplTeams where t_id =  team_id;
+return t_name;
+end fn_teamname;
+
+
+-----------------------------------------------------------------------------
+--fucntion to get team name
+function fn_teamnameslug(team_id number ) return varchar  is 
+t_name varchar(40);
+begin
+select t_team_name_slug into t_name from iplTeams where t_id =  team_id;
+return t_name;
+end fn_teamnameslug;
+
+
+-----------------------------------------------------------------------------
+--fucntion to get score
+	function fn_score( match_id number ,t_id number ) return varchar is
+	score varchar (50);
+	runs number;
+	overs decimal(6,3);
+	wickets  number;
+	CURSOR c_matchScore is
+			
+	select * from iplMatchRecords where m_id= match_id ;
+	begin 
+	
+	for temp_curScore in c_matchScore
+Loop
+if(temp_curScore.m_fi_id = t_id) then 
+runs := temp_curScore.m_fi_run;
+overs := temp_curScore.m_fi_over;
+wickets := temp_curScore.m_fi_wicket;
+else
+runs := temp_curScore.m_si_run;
+overs := temp_curScore.m_si_over;
+wickets := temp_curScore.m_si_wicket;
+
+end if;
+
+end loop;
+score :=  runs || '/' || wickets || '('||overs||')';
+return score;
+	 end fn_score;
+
+
+
+end pckIpl;
+
+
+---------------------------------------------------------------------------------------------------
+
+
+
+

@@ -1,0 +1,385 @@
+----------------------First 28 League results ------------
+/*
+create or replace view vw_iplMatchResultsFirst28 as
+
+select itf.t_team_name || ' ' || chr(10) || imr.m_fi_run || '/' || imr.m_fi_wicket ||' (' ||imr.m_fi_over || ' overs' || ')' AS batting , ' V  ' AS vs,
+
+its.t_team_name || ' ' || Chr(10) || imr.m_si_run || '/' ||imr.m_si_wicket ||' (' ||imr.m_si_over || ' overs' || ')' AS bowling ,
+ pckIpl.fn_winner(imr.m_fi_id  ,imr.m_fi_run , imr.m_fi_wicket  , imr.m_si_id  ,imr.m_si_run ,imr.m_si_wicket, imr.m_dls_flag ) as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 1 and 28
+ORDER BY imr.m_id ;
+*/
+-------------------------------------------------------------------------------------
+
+create or replace view vw_leftView as
+
+select rownum as rnl , b.batting as A,b.vs as B,b.bowling as C , b.Result as D from    (select  a.* from(
+
+
+select imr.m_id as ID, 
+itf.t_team_name  AS batting , 
+' V  ' AS vs,
+its.t_team_name  AS bowling ,
+ pckIpl.fn_winner(imr.m_fi_id  ,imr.m_fi_run , imr.m_fi_wicket  , imr.m_si_id  ,imr.m_si_run ,imr.m_si_wicket, imr.m_dls_flag ) as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 1 and 28
+
+union 
+
+select imr2.m_id as ID2, 
+imr2.m_fi_run || '/' || imr2.m_fi_wicket ||' (' ||imr2.m_fi_over || ' overs' || ')' AS batting2  , 
+NULL AS vs2,
+ imr2.m_si_run || '/' ||imr2.m_si_wicket ||' (' ||imr2.m_si_over || ' overs' || ')' AS bowling2 ,
+ Null as Result2 
+FROM iplMatchRecords imr2
+where imr2.m_id between 1 and 28
+
+union 
+select imr.m_id as ID, 
+NULL  AS batting , 
+NULL AS vs,
+NULL  AS bowling ,
+NULL as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 1 and 28
+
+
+) a order by a.id , a.batting desc) b;
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------
+
+
+--------------last 28 league results
+create or replace view vw_rightView as
+
+select rownum as rnr , b.batting as AA,b.vs as AE,b.bowling as AC , b.Result as AD from    (select  a.* from(
+select imr.m_id as ID, 
+itf.t_team_name  AS batting , 
+' V  ' AS vs,
+its.t_team_name  AS bowling ,
+ pckIpl.fn_winner(imr.m_fi_id  ,imr.m_fi_run , imr.m_fi_wicket  , imr.m_si_id  ,imr.m_si_run ,imr.m_si_wicket, imr.m_dls_flag ) as Result 
+FROM iplMatchRecords imr
+
+JOIN iplTeams itf ON itf.t_id= imr.m_fi_id
+
+JOIN iplTeams its ON its.t_id= imr.m_si_id
+
+where imr.m_id between 29 and 56
+
+union 
+
+select imr2.m_id as ID2, 
+imr2.m_fi_run || '/' || imr2.m_fi_wicket ||' (' ||imr2.m_fi_over || ' overs' || ')' AS batting2  , 
+NULL AS vs2,
+ imr2.m_si_run || '/' ||imr2.m_si_wicket ||' (' ||imr2.m_si_over || ' overs' || ')' AS bowling2 ,
+ Null as Result2 
+FROM iplMatchRecords imr2
+where imr2.m_id between 29 and 56
+
+union 
+select imr.m_id as ID, 
+NULL  AS batting , 
+NULL AS vs,
+NULL  AS bowling ,
+NULL as Result 
+FROM iplMatchRecords imr
+where imr.m_id between 29 and 56
+) a order by a.id , a.batting desc) b;
+
+
+
+-------------------------------------------------------------------------------------------------------
+---------------------Qualifier-1 Result 
+
+create or replace view vw_iplMatchResultsQualifier1 as
+select   pckIpl.fn_teamname(t_id) as namea ,pckIpl.fn_score(57,t_id) as scorea,
+            Null as Null1a,
+			Null as Null2a,
+			Null as Null3a,
+			Null as Null4a,
+			Null as Null5a,
+			Null as Null6a,
+			Null as Null7a,
+			Null as Null8a,
+			Null as Null9a,
+			Null as Null10a,
+			Null as Null11a,
+		    Null as Null12a,
+			Null as Null13a,
+			Null as Null14a,
+			Null as Null15a,
+			Null as Null16a from iplTeams it
+where  it.t_id  = '8' or it.t_id = '1' order by t_id desc;
+
+
+-------------------------------------------------------------------------------------------------------
+---------------------Eliminator Result 
+
+create or replace view vw_iplMatchResultsEliminator as
+select   pckIpl.fn_teamname(t_id) as nameb,
+pckIpl.fn_score(58,t_id) as scoreb,
+Null as Null1b,
+			Null as Null2b,
+			Null as Null3b,
+			Null as Null4b,
+			Null as Null5b,
+			Null as Null6b,
+			Null as Null7b,
+			Null as Null8b,
+			Null as Null9b,
+			Null as Null10b,
+			Null as Null11b,
+		    Null as Null12b,
+			Null as Null13b,
+			Null as Null14b,
+			Null as Null15b,
+			Null as Null16b from iplTeams it
+where  it.t_id  = '4' or it.t_id = '6' ;
+
+-------------------------------------------------------------------------------------------------------
+---------------------Qualifier-2 Result 
+
+create or replace view vw_iplMatchResultsQualifier2 as
+select    Null as Null1c,
+			Null as Null2c,
+			Null as Null3c,
+			Null as Null4c,
+			Null as Null5c,
+			pckIpl.fn_teamnameslug(t_id) as namec ,
+			pckIpl.fn_score(59,t_id) as scorec,
+		Null as Null6c,
+			Null as Null7c,
+			Null as Null8c,
+			Null as Null9c,
+			Null as Null10c,
+			Null as Null11c,
+		    Null as Null12c,
+			Null as Null13c,
+			Null as Null14c,
+			Null as Null15c,
+			Null as Null16c   from iplTeams it
+where  it.t_id  = '8' or it.t_id = '4' order by t_id desc;
+
+-------------------------------------------------------------------------------------------------------
+---------------------Final
+
+create or replace view vw_iplMatchResultsFinal as
+select   pckIpl.fn_teamnameslug(t_id) as named,pckIpl.fn_score(60,t_id) as scored,
+              Null as Null1d,
+			Null as Null2d,
+			Null as Null3d,
+			Null as Null4d,
+			Null as Null5d,
+			Null as Null6d,
+			Null as Null7d,
+			Null as Null8d,
+			Null as Null9d,
+			Null as Null10d,
+			Null as Null11d,
+		    Null as Null12d,
+			Null as Null13d,
+			Null as Null14d,
+			Null as Null15d,
+			Null as Null16d from iplTeams it
+where  it.t_id  = '8' or it.t_id = '1' ;
+
+
+
+
+---------------------------------------------------------------------------------------------------------
+-------------Views for League Points
+
+create or replace view vw_iplLeaguePoints as 
+select NAMEe,Plde,We,Le,Te, NRe,Ptse,NRRe,Null1e,Null2e,Null3e,Null4e,Null5e,Null6e,Null7e,Null8e,Null9e,Null10e from 
+(select 
+t_team_name as NAMEe , 
+            cast (14 as varchar(20)) as Plde, 
+           pckIpl.fn_wins(t_id) as We,
+            pckIpl.fn_lose(t_id) as Le,
+            pckIpl.fn_draws(t_id) as Te,
+             cast (0 as varchar(20)) as NRe, 
+           pckIpl.fn_points(t_id) as Ptse,
+           pckIpl.fn_nrr(t_id)  as NRRe,
+		   Null as Null1e,
+			Null as Null2e,
+			Null as Null3e,
+			Null as Null4e,
+			Null as Null5e,
+			Null as Null6e,
+			Null as Null7e,
+			Null as Null8e,
+			Null as Null9e,
+			Null as Null10e
+			from iplTeams
+			order by Ptse desc, NRRe desc);
+
+
+--------------------------------------------------------------------------------------------------------------------
+---------------------Views for league progression
+create or replace view vw_iplLeagueProgression as 
+
+select    t_team_name as LeagueProgressionf, 
+            pckIpl.fn_pointsProgression(t_id,1,'L') as "1",
+             pckIpl.fn_pointsProgression(t_id,2,'L') as "2",
+             pckIpl.fn_pointsProgression(t_id,3,'L') as "3",
+             pckIpl.fn_pointsProgression(t_id,4,'L') as "4",
+             pckIpl.fn_pointsProgression(t_id,5,'L') as "5",
+             pckIpl.fn_pointsProgression(t_id,6,'L') as "6",
+             pckIpl.fn_pointsProgression(t_id,7,'L') as "7",
+             pckIpl.fn_pointsProgression(t_id,8,'L') as "8",
+             pckIpl.fn_pointsProgression(t_id,9,'L') as "9",
+             pckIpl.fn_pointsProgression(t_id,10,'L') as "10",
+             pckIpl.fn_pointsProgression(t_id,11,'L') as "11",
+             pckIpl.fn_pointsProgression(t_id,12,'L') as "12",
+             pckIpl.fn_pointsProgression(t_id,13,'L') as "13",
+             pckIpl.fn_pointsProgression(t_id,14,'L') as "14",
+             pckIpl.fn_pointsProgression(t_id,14,'Q1E') as Q1Ef,
+             pckIpl.fn_pointsProgression(t_id,14,'Q2') as Q2f,
+             pckIpl.fn_pointsProgression(t_id,14,'F') as Ff
+               from iplTeams;
+		  
+--------------------------------------------------------------------------------------------------------------------------------
+---------------------Views for IPL Match Summary
+create or replace view vw_iplMatchSummary as 
+
+select    t_team_name as Namef, 
+            pckIpl.fn_matchSummary(t_id,1) as CSKf,
+			pckIpl.fn_matchSummary(t_id,2) as DDf,
+			pckIpl.fn_matchSummary(t_id,3) as KXIPf,
+			pckIpl.fn_matchSummary(t_id,4) as KKRf,
+			pckIpl.fn_matchSummary(t_id,5) as MIf,
+			pckIpl.fn_matchSummary(t_id,6) as RRf,
+			pckIpl.fn_matchSummary(t_id,7) as RCBf,
+			pckIpl.fn_matchSummary(t_id,8) as SRHf,
+			Null as Null1f,
+			Null as Null2f,
+			Null as Null3f,
+			Null as Null4f,
+			Null as Null5f,
+			Null as Null6f,
+			Null as Null7f,
+			Null as Null8f,
+			Null as Null9f
+			from iplTeams;
+            
+            
+-------------------------------------------------
+
+create or replace view vw_centralView as
+select rownum as rnc,NULL as E , NULL as F, NULL as G, a.* from (
+select NULL as H,NULL as I,NULL as J,NULL as K,NULL as L,NULL as M,NULL as N,'Group Matches' as O,NULL as P,NULL as Q,NULL as R ,NULL as S,NULL as T,NULL as U,NULL as V,NULL as W,'Playoffs' as X,NULL as Y from dual
+union all
+select 'League Progression->','1','2','3','4','5','6','7','8','9','10','11','12','13','14','Q1/E','Q2','F' from dual
+union all
+select * from vw_iplLeagueProgression
+UNION all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select 'Match Summary','CSK','DD','KXIP','KKR','MI','RR','RCB','SRH',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplMatchSummary 
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select 'League Table',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select 'TEAM','Pld','W','L','T','NR','Pts','NRR',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplLeaguePoints 
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select 'Qualifier-1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplMatchResultsQualifier1
+union all 
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,'Q2',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplMatchResultsQualifier2
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select 'Eliminator',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplMatchResultsEliminator
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL from dual
+union all
+select * from vw_iplMatchResultsFinal )a;
+
+-------------------
+
+
+--select * from central_view;
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------
+------------------------FINAL OUTPUT QUERY
+select lv.A,lv.B,lv.C,lv.D,
+     cv.E,cv.F,cv.G,cv.H,cv.I,cv.J,cv.K,cv.L,cv.M,cv.N,cv.O,cv.P,cv.Q,cv.R,cv.S,cv.T,cv.U,cv.V,cv.W,cv.X,cv.Y,
+     rv.AA,rv.AE,rv.AC,rv.AD
+     from vw_leftView lv
+join vw_centralView cv on lv.rnl = cv.rnc
+join vw_rightView  rv     on   lv.rnl= rv.rnr
+
+
+			

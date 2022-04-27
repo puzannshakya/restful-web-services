@@ -1,0 +1,214 @@
+----Table for League Points
+
+create table iplTeams( 
+t_id number constraint ipl_team_pk primary key , 
+t_team_name  varchar(60), 
+t_team_name_slug   varchar(20)
+);
+
+
+
+
+
+---Table for Match Records
+create table iplMatchRecords( 
+m_id number constraint ipl_match_pk primary key, 
+m_fi_id number, 
+m_fi_run number, 
+m_fi_over decimal(6,3), 
+m_fi_wicket number, 
+m_fi_ha varchar(20),
+m_si_id number, 
+m_si_run number, 
+m_si_over decimal (6,3), 
+m_si_wicket number,
+m_si_ha varchar(20),
+m_dls_flag number,
+m_matchtype varchar(10) );
+
+
+-----------------------------------------------------
+Create sequence iplTeamsSeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+Create sequence iplMatchRecordsSeq start with 1 
+increment by 1 
+minvalue 1 
+maxvalue 10000;
+
+
+-----------------------
+
+---------------Insert  data into Team Table---------
+
+insert into iplTeams values ( iplTeamsSeq.nextval, 'Chennai Super Kings' , 'CSK' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Delhi Daredevils' , 'DD' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Kings XI Punjab' , 'KXIP' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Kolkata Knight Riders' , 'KKR' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Mumbai Indians' , 'MI' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Rajasthan Royals' , 'RR' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Royal Challenge Bangalore' , 'RCB' );
+
+ insert into iplTeams values ( iplTeamsSeq.nextval, 'Sunrisers Hyderabad' , 'SRH' );
+ 
+ 
+ 
+ ---------------Insert  data into Match Records -------
+ 
+create or replace procedure spInsertMatchTable(sp_fi_id number,sp_fi_run number,sp_fi_over decimal ,sp_fi_wicket number ,sp_fi_ha varchar,sp_si_id number ,sp_si_run number ,sp_si_over decimal,sp_si_wicket number,sp_si_ha varchar,sp_flag_dls number,sp_matchtype varchar) is
+begin 
+insert into iplMatchRecords(m_id , m_fi_id , m_fi_run, m_fi_over , m_fi_wicket , m_fi_ha ,m_si_id , m_si_run , m_si_over , m_si_wicket,m_si_ha ,m_dls_flag ,m_matchtype)
+values (iplMatchRecordsSeq.nextval,sp_fi_id ,sp_fi_run ,sp_fi_over ,sp_fi_wicket ,sp_fi_ha ,sp_si_id ,sp_si_run ,sp_si_over ,sp_si_wicket,sp_si_ha ,sp_flag_dls,sp_matchtype);
+
+end spInsertMatchTable;
+
+
+-----------------------------------------------------------------
+
+begin
+spInsertMatchTable(5,165,20,4,'H',1,169,19.5,9,'A',0,'L');
+
+spInsertMatchTable(2,166,20,7,'A',3,167,18.5,4,'H',0,'L');
+
+spInsertMatchTable(7,176,20,7,'A',4,177,18.5,6,'H',0,'L');
+
+spInsertMatchTable(6,125,20,9,'A',8,127,15.5,1,'H',0,'L');
+
+spInsertMatchTable(4,202,20,6,'A',1,205,19.5,5,'H',0,'L');
+
+spInsertMatchTable(6,70,6,5,'H',2,60,6,4,'A',1,'L');
+
+spInsertMatchTable(5,147,20,8,'A',8,151,20,9,'H',0,'L');
+
+spInsertMatchTable(3,155,19.2,10,'A',7,159,19.3,6,'H',0,'L');
+
+spInsertMatchTable(5,194,20,7,'H',2,195,20,3,'A',0,'L');
+
+spInsertMatchTable(4,138,20,8,'H',8,139,19,5,'A',0,'L');
+
+spInsertMatchTable(6,217,20,4,'A',7,198,20,6,'H',0,'L');
+
+spInsertMatchTable(3,197,20,7,'H',1,193,20,5,'A',0,'L');
+
+spInsertMatchTable(4,200,20,9,'H',2,129,14.2,10,'A',0,'L');
+
+spInsertMatchTable(5,213,20,6,'H',7,167,20,8,'A',0,'L');
+
+spInsertMatchTable(6,160,20,8,'H',4,163,18.5,3,'A',0,'L');
+
+spInsertMatchTable(3,193,20,3,'H',8,178,20,4,'A',0,'L');
+
+spInsertMatchTable(1,204,20,5,'H',6,140,18.3,10,'A',0,'L');
+
+spInsertMatchTable(4,124,13,7,'H',3,126,11.1,1,'A',1,'L');
+
+spInsertMatchTable(2,174,20,5,'A',7,176,18,4,'H',0,'L');
+
+spInsertMatchTable(1,182,20,3,'A',8,178,20,6,'H',0,'L');
+
+spInsertMatchTable(5,167,20,7,'A',6,168,19.4,7,'H',0,'L');
+
+spInsertMatchTable(3,143,20,8,'A',2,139,20,8,'H',0,'L');
+
+spInsertMatchTable(8,118,18.4,10,'A',5,87,18.5,10,'H',0,'L');
+
+spInsertMatchTable(7,205,20,8,'H',1,207,19.4,5,'A',0,'L');
+
+spInsertMatchTable(8,132,20,6,'H',3,119,19.2,10,'A',0,'L');
+
+spInsertMatchTable(2,219,20,4,'H',4,164,20,9,'A',0,'L');
+
+spInsertMatchTable(1,169,20,5,'H',5,170,19.4,2,'A',0,'L');
+
+spInsertMatchTable(8,151,20,7,'A',6,140,20,6,'H',0,'L');
+
+spInsertMatchTable(7,175,20,4,'H',4,176,19.2,4,'A',0,'L');
+
+spInsertMatchTable(1,211,20,4,'H',2,198,20,5,'A',0,'L');
+
+spInsertMatchTable(7,167,20,7,'H',5,153,20,7,'A',0,'L');
+
+spInsertMatchTable(2,150,12,6,'H',6,146,12,5,'A',1,'L');
+
+spInsertMatchTable(1,177,20,5,'A',4,180,17.4,4,'H',0,'L');
+
+spInsertMatchTable(3,174,20,6,'H',5,176,19,4,'A',0,'L');
+
+spInsertMatchTable(7,127,20,9,'A',1,128,18,4,'H',0,'L');
+
+spInsertMatchTable(2,163,20,5,'A',8,164,19.5,3,'H',0,'L');
+
+spInsertMatchTable(5,181,20,4,'H',4,168,20,6,'A',0,'L');
+
+spInsertMatchTable(6,152,20,9,'A',3,155,18.4,4,'H',0,'L');
+
+spInsertMatchTable(8,146,20,10,'H',7,141,20,6,'A',0,'L');
+
+spInsertMatchTable(6,158,20,8,'H',3,143,20,7,'A',0,'L');
+
+spInsertMatchTable(5,210,20,6,'A',4,108,18.1,10,'H',0,'L');
+
+spInsertMatchTable(2,187,20,5,'H',8,191,18.5,1,'A',0,'L');
+
+spInsertMatchTable(1,176,20,4,'A',6,177,19.5,6,'H',0,'L');
+
+spInsertMatchTable(4,245,20,6,'A',3,214,20,8,'H',0,'L');
+
+spInsertMatchTable(2,181,20,4,'H',7,187,19,5,'A',0,'L');
+
+spInsertMatchTable(8,179,20,4,'A',1,180,19,2,'H',0,'L');
+
+spInsertMatchTable(5,168,20,6,'H',6,171,18,3,'A',0,'L');
+
+spInsertMatchTable(3,88,15.1,10,'H',7,92,8.1,0,'A',0,'L');
+
+spInsertMatchTable(6,142,19,10,'A',4,145,18,4,'H',0,'L');
+
+spInsertMatchTable(5,186,20,8,'H',3,183,20,5,'A',0,'L');
+
+spInsertMatchTable(7,218,20,6,'H',8,204,20,3,'A',0,'L');
+
+spInsertMatchTable(2,162,20,5,'H',1,128,20,6,'A',0,'L');
+
+spInsertMatchTable(6,164,20,5,'H',7,134,19.2,10,'A',0,'L');
+
+spInsertMatchTable(8,172,20,9,'H',4,173,19.4,5,'A',0,'L');
+
+spInsertMatchTable(2,174,20,4,'H',5,163,19.3,10,'A',0,'L');
+
+spInsertMatchTable(3,153,19.4,10,'A',1,159,19.1,5,'H',0,'L');
+
+
+
+--------------Qualifier 1-----------
+spInsertMatchTable(8,139,20,7,'H',1,140,19.1,8,'A',0,'Q1');
+
+
+-------------Eliminator---------------
+
+
+spInsertMatchTable(4,169,20,7,'H',6,144,20,4,'A',0,'E');
+
+
+-------------------Qualifier 2----------------
+
+spInsertMatchTable(8,174,20,7,'A',4,160,20,9,'H',0,'Q2');
+
+
+-------------Final ----------
+spInsertMatchTable(1,181,18.3,2,'A',8,178,20,6,'H',0,'F');
+end;
+
+
+ 
+ 
+ 
+

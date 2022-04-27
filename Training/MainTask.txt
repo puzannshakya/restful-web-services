@@ -1,0 +1,705 @@
+
+drop package pckIPL;
+------Package Head -----------
+create package pckIPL as
+
+procedure spInsertMatchTable(sp_fi_id number,sp_fi_run number,sp_fi_over decimal ,sp_fi_wicket number ,sp_fi_ha varchar ,sp_si_id number ,sp_si_run number ,sp_si_over decimal,sp_si_wicket number,sp_si_ha varchar,sp_flag_dls number,sp_matchtype varchar);
+procedure spInsertLeagueTable(sp_l_fi_id number,sp_l_fi_run number,sp_l_fi_over decimal,sp_l_fi_wicket number ,sp_l_fi_ha varchar ,sp_l_si_id number ,sp_l_si_run number ,sp_l_si_over decimal,sp_l_si_wicket number,sp_l_si_ha varchar,sp_matchtype varchar);
+procedure spInsertLeagueProgression(lp_l_id number,lp_l_mp number,lp_l_points number,sp_matchtype varchar,sp_run number,sp_opp_run number);
+procedure spInsertMatchSummary(home_id number,away_id number,winner_slug varchar);
+
+
+end pckIpl;
+
+
+
+-----------Package Body -----------
+
+create or replace package body pckIPL as
+
+/*
+------Trigger for inserting into the ipl league  table----
+trigger trigInsertIplTable
+after insert on iplMatchRecords
+
+for each row
+when(new.m_id>0)
+begin
+
+spInsertLeagueTable( :new.m_fi_id,:new.m_fi_run,:new.m_fi_over,:new.m_fi_wicket,:new.m_si_id,:new.m_si_run,:new.m_si_over,:new.m_si_wicket);
+end trigInsertIplTable;
+
+
+*/
+
+------procedure for inserting  details into the match table
+
+
+procedure spInsertMatchTable(sp_fi_id number,sp_fi_run number,sp_fi_over decimal ,sp_fi_wicket number ,sp_fi_ha varchar,sp_si_id number ,sp_si_run number ,sp_si_over decimal,sp_si_wicket number,sp_si_ha varchar,sp_flag_dls number,sp_matchtype varchar) is
+
+begin 
+insert into iplMatchRecords values (iplMatchRecordsSeq.nextval,sp_fi_id ,sp_fi_run ,sp_fi_over ,sp_fi_wicket ,sp_fi_ha ,sp_si_id ,sp_si_run ,sp_si_over ,sp_si_wicket,sp_si_ha ,sp_flag_dls,sp_matchtype);
+
+
+pckIpl.spInsertLeagueTable( sp_fi_id ,sp_fi_run ,sp_fi_over ,sp_fi_wicket ,sp_fi_ha,sp_si_id ,sp_si_run ,sp_si_over ,sp_si_wicket,sp_si_ha,sp_matchtype);
+
+end spInsertMatchTable;
+
+
+
+----procedure for inserting details into the ipl league table
+
+procedure spInsertLeagueTable(sp_l_fi_id number,sp_l_fi_run number,sp_l_fi_over decimal ,sp_l_fi_wicket number ,sp_l_fi_ha varchar,sp_l_si_id number ,sp_l_si_run number ,sp_l_si_over decimal,sp_l_si_wicket number,sp_l_si_ha varchar,sp_matchtype varchar) is
+sp_l_fi_mp number;
+sp_l_fi_win number;
+sp_l_fi_draw number; 
+sp_l_fi_lost number; 
+sp_l_fi_points number; 
+sp_l_fi_runs_for number;
+sp_l_fi_overs_for decimal(6,3);
+sp_l_fi_overs_for_nrr decimal(6,3);
+sp_l_fi_balls_for number ;
+sp_l_fi_runs_against number;
+sp_l_fi_overs_against decimal(6,3);
+sp_l_fi_overs_against_nrr decimal(6,3);
+sp_l_fi_balls_against number ;
+sp_l_fi_nrr decimal(6,3);
+sp_l_fi_over_cal decimal(6,3);
+sp_l_fi_balls_cal number;
+sp_fi_slug_name varchar2(20);
+
+
+sp_l_si_mp number;
+sp_l_si_win number;
+sp_l_si_draw number ;
+sp_l_si_lost number ;
+sp_l_si_points number; 
+sp_l_si_runs_for number;
+sp_l_si_overs_for decimal(6,3);
+sp_l_si_overs_for_nrr decimal(6,3);
+sp_l_si_balls_for number;
+sp_l_si_runs_against number;
+sp_l_si_overs_against decimal(6,3);
+sp_l_si_overs_against_nrr decimal(6,3);
+sp_l_si_balls_against number;
+sp_l_si_nrr decimal(6,3);
+sp_l_si_over_cal decimal(6,3);
+sp_l_si_balls_cal number;
+sp_si_slug_name varchar2(20);
+
+flag number;
+winner_slug varchar2(20);
+home_id number;
+away_id number;
+
+----flag 1 if first batter wins
+----flag 0 if second batter wins
+----flag 2 if draw
+
+begin 
+
+
+---To check who is home and away 
+if(sp_l_fi_ha = 'H') then 
+home_id :=  sp_l_fi_id;
+else 
+away_id :=sp_l_fi_id;
+end if;
+
+
+if(sp_l_si_ha = 'H') then 
+home_id :=  sp_l_si_id;
+else 
+away_id :=sp_l_si_id;
+end if;
+
+
+-----to check who won -------------
+ select t_team_name_slug into sp_fi_slug_name  from iplLeaguePoints where t_id = sp_l_fi_id;
+   select t_team_name_slug into sp_si_slug_name  from iplLeaguePoints where t_id = sp_l_si_id;
+if(sp_l_fi_run > sp_l_si_run) then
+flag :=1;
+winner_slug := sp_fi_slug_name;
+elsif( sp_l_si_run >sp_l_fi_run) then
+flag :=0;
+winner_slug := sp_si_slug_name;
+else
+flag :=2;
+end if;
+
+
+if(sp_matchtype = 'L') then
+
+----fecthing old details fromt the league table --------
+select t_match_played,t_win,t_draw,t_lost,t_points,t_runs_for,t_balls_for,t_runs_against,t_balls_against,t_nrr into sp_l_fi_mp, sp_l_fi_win,sp_l_fi_draw,sp_l_fi_lost ,sp_l_fi_points,sp_l_fi_runs_for,sp_l_fi_balls_for,sp_l_fi_runs_against,sp_l_fi_balls_against,sp_l_fi_nrr from iplLeaguePoints where t_id =sp_l_fi_id;
+select t_match_played,t_win,t_draw,t_lost,t_points,t_runs_for,t_balls_for,t_runs_against,t_balls_against,t_nrr into sp_l_si_mp, sp_l_si_win,sp_l_si_draw,sp_l_si_lost ,sp_l_si_points,sp_l_si_runs_for,sp_l_si_balls_for,sp_l_si_runs_against,sp_l_si_balls_against,sp_l_si_nrr from iplLeaguePoints where t_id =sp_l_si_id;
+
+----updating matches played----------
+sp_l_fi_mp :=sp_l_fi_mp+1;
+sp_l_si_mp :=sp_l_si_mp+1;
+
+
+
+------updating win , draw and loss of the teams----------
+case flag
+when 0 then
+sp_l_fi_lost :=sp_l_fi_lost+1;
+sp_l_si_win :=sp_l_si_win+1;
+when 1 then 
+sp_l_fi_win :=sp_l_fi_win+1;
+sp_l_si_lost :=sp_l_si_lost+1;
+when 2 then 
+sp_l_fi_draw :=sp_l_fi_draw+1;
+sp_l_si_draw :=sp_l_si_draw+1;
+else 
+
+dbms_output.put_line('invalid');
+
+
+end case;
+
+-----updating runs for --------
+sp_l_fi_runs_for :=sp_l_fi_runs_for +sp_l_fi_run;
+sp_l_si_runs_for :=sp_l_si_runs_for +sp_l_si_run;
+
+
+
+
+--------------updating runs against
+
+sp_l_fi_runs_against := sp_l_fi_runs_against + sp_l_si_run;
+sp_l_si_runs_against := sp_l_si_runs_against + sp_l_fi_run;
+
+
+
+
+-------------------
+sp_l_fi_over_cal := sp_l_fi_over;
+sp_l_si_over_cal := sp_l_si_over ;
+
+
+------Overs conditions--------
+if(sp_l_fi_wicket = 10) then 
+sp_l_fi_over_cal := 20;
+end if;
+
+
+if(sp_l_si_wicket = 10) then 
+sp_l_si_over_cal := 20;
+end if;
+/*
+
+
+------Overs conditions--------
+if(sp_l_fi_wicket = 10 or sp_l_si_wicket = 10 ) then 
+
+if(sp_l_fi_wicket = 10) then
+
+case flag
+when 0 then
+sp_l_fi_over_cal :=20.0;
+
+
+when 1 then 
+if(sp_l_si_wicket =10) then
+sp_l_fi_over_cal :=20.0;
+sp_l_si_over_cal  := 20.0;
+
+
+end if;
+
+
+else 
+
+dbms_output.put_line('invalid');
+
+
+end case;
+
+elsif(sp_l_si_wicket = 10) then
+if(flag=1) then
+sp_l_si_over_cal :=20.0;
+end if;
+
+
+end if;
+
+
+
+
+
+end if;
+
+
+
+*/
+
+
+
+/*
+----updating overs for
+
+sp_l_fi_overs_for := sp_l_fi_overs_for + sp_l_fi_over_cal;
+sp_l_si_overs_for := sp_l_si_overs_for + sp_l_fi_over_cal;
+
+--------updating overs against
+sp_l_fi_overs_against := sp_l_fi_overs_against + sp_l_si_over_cal;
+sp_l_si_overs_against := sp_l_si_overs_against + sp_l_fi_over_cal ;
+
+
+
+
+---------------adjusting overs for
+if(REGEXP_SUBSTR(sp_l_fi_overs_for, '[^.]+$')>5) then
+
+sp_l_fi_overs_for := sp_l_fi_overs_for + 0.4;
+end if;
+
+if(REGEXP_SUBSTR(sp_l_si_overs_for, '[^.]+$')>5) then
+
+sp_l_si_overs_for := sp_l_si_overs_for + 0.4;
+end if;
+
+
+---------------adjusting overs against
+if(REGEXP_SUBSTR(sp_l_fi_overs_against, '[^.]+$')>5) then
+
+sp_l_fi_overs_against := sp_l_fi_overs_against + 0.4;
+end if;
+
+if(REGEXP_SUBSTR(sp_l_si_overs_against, '[^.]+$')>5) then
+
+sp_l_si_overs_against := sp_l_si_overs_against + 0.4;
+end if;
+
+
+-----------------------
+sp_l_fi_overs_for_nrr :=          trunc(sp_l_fi_overs_for) + ((sp_l_fi_overs_for-trunc(sp_l_fi_overs_for))*10)/6;
+sp_l_si_overs_for_nrr  := trunc(sp_l_si_overs_for) + ((sp_l_si_overs_for-trunc(sp_l_si_overs_for))*10)/6;
+sp_l_fi_overs_against_nrr  := trunc(sp_l_fi_overs_against) + ((sp_l_fi_overs_against-trunc(sp_l_fi_overs_against))*10)/6;
+sp_l_si_overs_against_nrr  := trunc(sp_l_si_overs_against) + ((sp_l_si_overs_against-trunc(sp_l_si_overs_against))*10)/6;
+
+
+*/
+
+
+
+------Adjusting balls------
+
+sp_l_fi_balls_cal := trunc(sp_l_fi_over_cal)*6 + (sp_l_fi_over_cal-trunc(sp_l_fi_over_cal))*10;
+sp_l_si_balls_cal := trunc(sp_l_si_over_cal)*6 + (sp_l_si_over_cal-trunc(sp_l_si_over_cal))*10;
+
+
+sp_l_fi_balls_for := sp_l_fi_balls_for + sp_l_fi_balls_cal;
+sp_l_fi_balls_against := sp_l_fi_balls_against + sp_l_si_balls_cal;
+
+
+sp_l_si_balls_for := sp_l_si_balls_for + sp_l_si_balls_cal;
+sp_l_si_balls_against := sp_l_si_balls_against + sp_l_fi_balls_cal;
+
+
+
+
+
+
+
+
+------updating points of the team----------------
+sp_l_fi_points :=sp_l_fi_win *2 + sp_l_fi_draw;
+ sp_l_si_points :=sp_l_si_win *2 + sp_l_si_draw;
+ 
+ 
+ -----------updating nrr of the team------------------------
+ sp_l_fi_nrr :=(sp_l_fi_runs_for / (sp_l_fi_balls_for/6) )- (sp_l_fi_runs_against / (sp_l_fi_balls_against/6) );
+ sp_l_si_nrr := (sp_l_si_runs_for / (sp_l_si_balls_for/6) )- (sp_l_si_runs_against / (sp_l_si_balls_against/6) );
+ 
+ 
+ 
+ ------------updating details of iplLeague Table -----------------
+ 
+ update iplLeaguePoints set t_match_played=sp_l_fi_mp,t_win=sp_l_fi_win,t_draw=sp_l_fi_draw,t_lost=sp_l_fi_lost,t_points=sp_l_fi_points,t_runs_for=sp_l_fi_runs_for,t_balls_for=sp_l_fi_balls_for,t_runs_against=sp_l_fi_runs_against,t_balls_against=sp_l_fi_balls_against,t_nrr= sp_l_fi_nrr where t_id=sp_l_fi_id; 
+ 
+ 
+  update iplLeaguePoints set t_match_played=sp_l_si_mp,t_win=sp_l_si_win,t_draw=sp_l_si_draw,t_lost=sp_l_si_lost,t_points=sp_l_si_points,t_runs_for=sp_l_si_runs_for,t_balls_for=sp_l_si_balls_for,t_runs_against=sp_l_si_runs_against,t_balls_against=sp_l_si_balls_against,t_nrr= sp_l_si_nrr where t_id=sp_l_si_id; 
+  
+  
+  end if;
+  pckIpl.spInsertLeagueProgression(sp_l_fi_id,sp_l_fi_mp,sp_l_fi_points,sp_matchtype,sp_l_fi_run,sp_l_si_run);
+  pckIpl.spInsertLeagueProgression(sp_l_si_id,sp_l_si_mp,sp_l_si_points,sp_matchtype,sp_l_si_run,sp_l_fi_run);
+  pckIpl.spInsertMatchSummary(home_id,away_id,winner_slug);
+  
+  
+end spInsertLeagueTable;
+
+
+---------------------Procedure for inserting into League Progression -----------------------
+procedure spInsertLeagueProgression(lp_l_id number,lp_l_mp number,lp_l_points number,sp_matchtype varchar,sp_run number,sp_opp_run number) is 
+result varchar(20);
+begin
+
+if(sp_run > sp_opp_run) then 
+result := 'W';
+else
+result := 'L';
+end if;
+if(sp_matchtype = 'L') then
+
+case lp_l_mp
+
+when 1 then
+update leagueProgression set lp_1 = lp_l_points where lp_team_id = lp_l_id;
+
+when 2 then
+update leagueProgression set lp_2 = lp_l_points where lp_team_id = lp_l_id;
+
+when 3 then
+update leagueProgression set lp_3 = lp_l_points where lp_team_id = lp_l_id;
+
+when 4 then
+update leagueProgression set lp_4 = lp_l_points where lp_team_id = lp_l_id;
+
+when 5 then
+update leagueProgression set lp_5 = lp_l_points where lp_team_id = lp_l_id;
+
+when 6 then
+update leagueProgression set lp_6 = lp_l_points where lp_team_id = lp_l_id;
+
+when 7 then
+update leagueProgression set lp_7 = lp_l_points where lp_team_id = lp_l_id;
+
+when 8 then
+update leagueProgression set lp_8 = lp_l_points where lp_team_id = lp_l_id;
+
+when 9 then
+update leagueProgression set lp_9 = lp_l_points where lp_team_id = lp_l_id;
+
+when 10 then
+update leagueProgression set lp_10 = lp_l_points where lp_team_id = lp_l_id;
+
+when 11 then
+update leagueProgression set lp_11 = lp_l_points where lp_team_id = lp_l_id;
+
+when 12 then
+update leagueProgression set lp_12 = lp_l_points where lp_team_id = lp_l_id;
+
+when 13 then
+update leagueProgression set lp_13 = lp_l_points where lp_team_id = lp_l_id;
+
+when 14 then
+update leagueProgression set lp_14 = lp_l_points where lp_team_id = lp_l_id;
+end case;
+
+elsif(sp_matchtype = 'Q1' or sp_matchtype = 'E' ) then
+update leagueProgression set lp_Q1E = result where lp_team_id = lp_l_id;
+
+elsif(sp_matchtype = 'Q2'  ) then
+update leagueProgression set lp_Q2 = result where lp_team_id = lp_l_id;
+
+elsif(sp_matchtype = 'F'  ) then 
+update leagueProgression set lp_F = result where lp_team_id = lp_l_id;
+end if;
+
+end spInsertLeagueProgression;
+
+
+
+-------------------Procedure for inserting match summary
+procedure spInsertMatchSummary(home_id number,away_id number,winner_slug varchar) is 
+
+
+begin 
+case away_id
+
+when 1 then 
+update matchSummary set ms_csk = winner_slug where ms_team_id =home_id;
+
+when 2 then 
+update matchSummary set ms_dd = winner_slug where ms_team_id =home_id;
+
+when 3 then
+update matchSummary set ms_kxip = winner_slug where ms_team_id =home_id;
+
+when 4 then
+update matchSummary set ms_kkr = winner_slug where ms_team_id =home_id;
+
+when 5 then
+update matchSummary set ms_mi = winner_slug where ms_team_id =home_id;
+
+when 6 then
+update matchSummary set ms_rr = winner_slug where ms_team_id =home_id;
+
+when 7 then
+update matchSummary set ms_rcb = winner_slug where ms_team_id =home_id;
+
+when 8 then
+update matchSummary set ms_srh = winner_slug where ms_team_id =home_id;
+
+end case;
+
+end spInsertMatchSummary;
+
+
+
+
+
+
+
+end pckIpl;
+
+------------
+
+
+begin 
+pckIpl.spInsertMatchTable(5,165,20,4,'H',1,169,19.5,9,'A',0,'L');
+pckIpl.spInsertMatchTable(4,202,20,6,'A',1,205,19.5,5,'H',0,'L');
+end;
+----------Insert all Match Details
+
+begin
+
+---League--
+pckIpl.spInsertMatchTable(5,165,20,4,'H',1,169,19.5,9,'A',0,'L');
+
+pckIpl.spInsertMatchTable(2,166,20,7,'A',3,167,18.5,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(7,176,20,7,'A',4,177,18.5,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(6,125,20,9,'A',8,127,15.5,1,'H',0,'L');
+
+pckIpl.spInsertMatchTable(4,202,20,6,'A',1,205,19.5,5,'H',0,'L');
+
+pckIpl.spInsertMatchTable(6,70,6,5,'H',2,60,6,4,'A',1,'L');
+
+pckIpl.spInsertMatchTable(5,147,20,8,'A',8,151,20,9,'H',0,'L');
+
+pckIpl.spInsertMatchTable(3,155,19.2,10,'A',7,159,19.3,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(5,194,20,7,'H',2,195,20,3,'A',0,'L');
+
+pckIpl.spInsertMatchTable(4,138,20,8,'H',8,139,19,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,217,20,4,'A',7,198,20,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(3,197,20,7,'H',1,193,20,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(4,200,20,9,'H',2,129,14.2,10,'A',0,'L');
+
+pckIpl.spInsertMatchTable(5,213,20,6,'H',7,167,20,8,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,160,20,8,'H',4,163,18.5,3,'A',0,'L');
+
+pckIpl.spInsertMatchTable(3,193,20,3,'H',8,178,20,4,'A',0,'L');
+
+pckIpl.spInsertMatchTable(1,204,20,5,'H',6,140,18.3,10,'A',0,'L');
+
+pckIpl.spInsertMatchTable(4,124,13,7,'H',3,126,11.1,1,'A',1,'L');
+
+pckIpl.spInsertMatchTable(2,174,20,5,'A',7,176,18,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(1,182,20,3,'A',8,178,20,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(5,167,20,7,'A',6,168,19.4,7,'H',0,'L');
+
+pckIpl.spInsertMatchTable(3,143,20,8,'A',2,139,20,8,'H',0,'L');
+
+pckIpl.spInsertMatchTable(8,118,18.4,10,'A',5,87,18.5,10,'H',0,'L');
+
+pckIpl.spInsertMatchTable(7,205,20,8,'H',1,207,19.4,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(8,132,20,6,'H',3,119,19.2,10,'A',0,'L');
+
+pckIpl.spInsertMatchTable(2,219,20,4,'H',4,164,20,9,'A',0,'L');
+
+pckIpl.spInsertMatchTable(1,169,20,5,'H',5,170,19.4,2,'A',0,'L');
+
+pckIpl.spInsertMatchTable(8,151,20,7,'A',6,140,20,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(7,175,20,4,'H',4,176,19.2,4,'A',0,'L');
+
+pckIpl.spInsertMatchTable(1,211,20,4,'H',2,198,20,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(7,167,20,7,'H',5,153,20,7,'A',0,'L');
+
+pckIpl.spInsertMatchTable(2,150,12,6,'H',6,146,12,5,'A',1,'L');
+
+pckIpl.spInsertMatchTable(1,177,20,5,'A',4,180,17.4,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(3,174,20,6,'H',5,176,19,4,'A',0,'L');
+
+pckIpl.spInsertMatchTable(7,127,20,9,'A',1,128,18,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(2,163,20,5,'A',8,164,19.5,3,'H',0,'L');
+
+pckIpl.spInsertMatchTable(5,181,20,4,'H',4,168,20,6,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,152,20,9,'A',3,155,18.4,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(8,146,20,10,'H',7,141,20,6,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,158,20,8,'H',3,143,20,7,'A',0,'L');
+
+pckIpl.spInsertMatchTable(5,210,20,6,'A',4,108,18.1,10,'H',0,'L');
+
+pckIpl.spInsertMatchTable(2,187,20,5,'H',8,191,18.5,1,'A',0,'L');
+
+pckIpl.spInsertMatchTable(1,176,20,4,'A',6,177,19.5,6,'H',0,'L');
+
+pckIpl.spInsertMatchTable(4,245,20,6,'A',3,214,20,8,'H',0,'L');
+
+pckIpl.spInsertMatchTable(2,181,20,4,'H',7,187,19,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(8,179,20,4,'A',1,180,19,2,'H',0,'L');
+
+pckIpl.spInsertMatchTable(5,168,20,6,'H',6,171,18,3,'A',0,'L');
+
+pckIpl.spInsertMatchTable(3,88,15.1,10,'H',7,92,8.1,0,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,142,19,10,'A',4,145,18,4,'H',0,'L');
+
+pckIpl.spInsertMatchTable(5,186,20,8,'H',3,183,20,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(7,218,20,6,'H',8,204,20,3,'A',0,'L');
+
+pckIpl.spInsertMatchTable(2,162,20,5,'H',1,128,20,6,'A',0,'L');
+
+pckIpl.spInsertMatchTable(6,164,20,5,'H',7,134,19.2,10,'A',0,'L');
+
+pckIpl.spInsertMatchTable(8,172,20,9,'H',4,173,19.4,5,'A',0,'L');
+
+pckIpl.spInsertMatchTable(2,174,20,4,'H',5,163,19.3,10,'A',0,'L');
+
+pckIpl.spInsertMatchTable(3,153,19.4,10,'A',1,159,19.1,5,'H',0,'L');
+
+
+
+--------------Qualifier 1-----------
+pckIpl.spInsertMatchTable(8,139,20,7,'H',1,140,19.1,8,'A',0,'Q1');
+
+
+-------------Eliminator---------------
+
+
+pckIpl.spInsertMatchTable(4,169,20,7,'H',6,144,20,4,'A',0,'E');
+
+
+-------------------Qualifier 2----------------
+
+pckIpl.spInsertMatchTable(8,174,20,7,'A',4,160,20,9,'H',0,'Q2');
+
+
+-------------Final ----------
+pckIpl.spInsertMatchTable(1,181,18.3,2,'A',8,178,20,6,'H',0,'F');
+end;
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------Call Procedure to display Results-------------
+----cursor for displaying all  league  matches result
+
+
+
+DECLARE
+c_first_team varchar(40);
+c_second_team varchar(40);
+c_winning_team varchar(40);
+c_winning_run  number;
+c_winning_wicket number;
+c_winner_flag number;
+CURSOR c_matchResults is
+select * from iplMatchRecords;
+begin
+for temp_cur in c_matchResults 
+Loop
+if(temp_cur.m_fi_run > temp_cur.m_si_run) then
+c_winner_flag := 1;
+elsif(temp_cur.m_si_run > temp_cur.m_fi_run) then
+c_winner_flag := 0;
+end if;
+
+select ilp.t_team_name into c_second_team from iplLeaguePoints ilp where ilp.t_id=temp_cur.m_si_id;
+select ilp.t_team_name into c_first_team from iplLeaguePoints ilp where ilp.t_id=temp_cur.m_fi_id;
+
+
+if(temp_cur.m_matchtype = 'L') then
+dbms_output.put_line('LEAGUE');
+dbms_output.put_line(' ');
+elsif(temp_cur.m_matchtype = 'Q1' ) then
+dbms_output.put_line('QUALIFIER 1');
+dbms_output.put_line(' ');
+elsif(temp_cur.m_matchtype = 'E' ) then
+dbms_output.put_line('ELIMINATOR');
+dbms_output.put_line(' ');
+elsif(temp_cur.m_matchtype = 'Q2' ) then
+dbms_output.put_line('QUALIFIER 2');
+dbms_output.put_line(' ');
+elsif(temp_cur.m_matchtype = 'F' ) then
+dbms_output.put_line('FINAL');
+dbms_output.put_line(' ');
+ end if;
+case c_winner_flag
+when 0 then
+select ilp.t_team_name into c_winning_team from iplLeaguePoints ilp where ilp.t_id=temp_cur.m_si_id;
+c_winning_wicket := 10 - temp_cur.m_si_wicket;
+if(temp_cur.m_dls_flag=0) then 
+dbms_output.put_line(c_first_team || ' ' || temp_cur.m_fi_run || '\' || temp_cur.m_fi_wicket || ' (' || temp_cur.m_fi_over || ')    VS    ' || c_second_team || ' ' || temp_cur.m_si_run || '\' || temp_cur.m_si_wicket || ' (' || temp_cur.m_si_over || ')------------- '|| c_winning_team || ' won by  ' || c_winning_wicket ||   ' wickets');
+else
+dbms_output.put_line(c_first_team || ' ' || temp_cur.m_fi_run || '\' || temp_cur.m_fi_wicket || ' (' || temp_cur.m_fi_over || ')    VS    ' || c_second_team || ' ' || temp_cur.m_si_run || '\' || temp_cur.m_si_wicket || ' (' || temp_cur.m_si_over || ')------------- '|| c_winning_team || ' won by  ' || c_winning_wicket ||  ' wickets(DLS METHOD)');
+
+end if;
+
+
+
+when 1 then
+select ilp.t_team_name into c_winning_team from iplLeaguePoints ilp where ilp.t_id=temp_cur.m_fi_id;
+c_winning_run := temp_cur.m_fi_run - temp_cur.m_si_run;
+if(temp_cur.m_dls_flag=0) then 
+dbms_output.put_line(c_first_team || ' ' || temp_cur.m_fi_run || '\' || temp_cur.m_fi_wicket || ' (' || temp_cur.m_fi_over || ')    VS    ' || c_second_team || ' ' || temp_cur.m_si_run || '\' || temp_cur.m_si_wicket || ' (' || temp_cur.m_si_over || ')------------- '|| c_winning_team || ' won by  ' || c_winning_run ||' runs');
+else
+dbms_output.put_line(c_first_team || ' ' || temp_cur.m_fi_run || '\' || temp_cur.m_fi_wicket || ' (' || temp_cur.m_fi_over || ')    VS    ' || c_second_team || ' ' || temp_cur.m_si_run || '\' || temp_cur.m_si_wicket || ' (' || temp_cur.m_si_over || ')------------- '|| c_winning_team || ' won by  ' || c_winning_run ||' runs(DLS METHOD)');
+
+end if;
+
+
+
+else
+dbms_output.put_line('invalid');
+
+end case;
+dbms_output.put_line(' ');
+dbms_output.put_line('  ');
+
+if(temp_cur.m_matchtype = 'F') then
+dbms_output.put_line(c_winning_team || ' won the IPL 2018' );
+end if;
+
+end loop;
+
+end;
+-------------
+select * from iplMatchRecords;
+-----------------
+
+
+
+------Display Final 
+select ROW_NUMBER() OVER (Order by  ilp.t_points desc , ilp.t_nrr desc) AS "RANK",ilp.t_team_name as "TEAM NAME", ilp.t_match_played  as "P", ilp.t_win as  "W", ilp.t_draw  as "D", ilp.t_lost as "L", ilp.t_points as "POINTS", ilp.t_nrr as "NRR",
+lp.lp_1 as "1",lp.lp_2 as "2",lp.lp_3 as "3",lp.lp_4 as "4",lp.lp_5 as "5",lp.lp_6 as "6",lp.lp_7 as "7",lp.lp_1 as "8",lp.lp_9 as "9",lp.lp_10 as "10",lp.lp_11 as "11",lp.lp_12 as "12",lp.lp_13 as "13",lp.lp_14 as "14",lp.lp_Q1E as "Q1/E",lp.lp_Q2 as "Q2",lp.lp_F as "F",
+ms.ms_csk as "CSK",ms.ms_DD as "DD",ms.ms_kxip as "KXIP",ms.ms_kkr as "KKR",ms.ms_mi as "MI",ms.ms_rr as "RR",ms.ms_rcb as "RCB",ms.ms_srh as "SRH"
+from iplLeaguePoints ilp
+JOIN  leagueProgression lp ON lp.lp_team_id=ilp.t_id
+JOIN  matchSummary ms ON ilp.t_id=ms.ms_team_id
+order by ilp.t_points desc , ilp.t_nrr desc;
+
+---------Display League Table ---------
+select ROW_NUMBER() OVER (Order by  t_points desc , t_nrr desc) AS "RANK",t_team_name as "TEAM NAME", t_match_played  as "P", t_win as  "W", t_draw  as "D", t_lost as "L", t_points as "POINTS", t_nrr as "NRR" from iplLeaguePoints order by t_points desc , t_nrr desc;
+-----------------
+select ROW_NUMBER() OVER (Order by  t_points desc , t_nrr desc) AS "RANK",t_team_name as "TEAM", t_match_played  as "P", t_win as  "W", t_draw  as "D", t_lost as "L", t_points as "POINTS",t_runs_for,t_balls_for,t_runs_against,t_balls_against, t_nrr as "NRR" from iplLeaguePoints order by t_points desc , t_nrr desc;
+
+------display Match Summary 
+select ilp.t_team_name as "TEAM NAME" , ms.ms_csk as "CSK",ms.ms_DD as "DD",ms.ms_kxip as "KXIP",ms.ms_kkr as "KKR",ms.ms_mi as "MI",ms.ms_rr as "RR",ms.ms_rcb as "RCB",ms.ms_srh as "SRH" from matchSummary ms JOIN iplLeaguePoints ilp on ilp.t_id=ms.ms_team_id;
+
+--------Display League Progression
+select ilp.t_team_name as "Team Name",lp.lp_1 as "1",lp.lp_2 as "2",lp.lp_3 as "3",lp.lp_4 as "4",lp.lp_5 as "5",lp.lp_6 as "6",lp.lp_7 as "7",lp.lp_1 as "8",lp.lp_9 as "9",lp.lp_10 as "10",lp.lp_11 as "11",lp.lp_12 as "12",lp.lp_13 as "13",lp.lp_14 as "14",lp.lp_Q1E as "Q1/E",lp.lp_Q2 as "Q2",lp.lp_F as "F" from leagueProgression lp join iplLeaguePoints ilp on lp.lp_team_id=ilp.t_id  ; 

@@ -1,0 +1,58 @@
+---------------Dummy data into League Table---------
+
+insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Chennai Super Kings' , 'CSK' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Delhi Daredevils' , 'DD' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Kings XI Punjab' , 'KXIP' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Kolkata Knight Riders' , 'KKR' ,0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Mumbai Indians' , 'MI' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Rajasthan Royals' , 'RR' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Royal Challenge Bangalore' , 'RCB' , 0,0,0,0,0,0,0,0,0,0);
+
+ insert into iplLeaguePoints values ( iplLeaguePointsSeq.nextval, 'Sunrisers Hyderabad' , 'SRH' ,0,0,0,0,0,0,0,0,0,0);
+ 
+ 
+ 
+ 
+ 
+ --------------------------------League Progression-----------------------------------------
+ 
+ 
+ 
+insert into leagueProgression values(leagueProgressionSeq.nextval,1,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,2,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,3,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,4,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,5,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,6,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,7,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+insert into leagueProgression values(leagueProgressionSeq.nextval,8,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ');
+		
+		
+		
+		
+		
+		
+	------------------------Match Summary ---------------
+
+insert into matchSummary values (matchSummarySeq.nextval,1,' ',' ',' ',' ',' ',' ',' ',' ');
+insert into matchSummary values (matchSummarySeq.nextval,2,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,3,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,4,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,5,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,6,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,7,' ',' ',' ',' ',' ',' ',' ',' ');	
+insert into matchSummary values (matchSummarySeq.nextval,8,' ',' ',' ',' ',' ',' ',' ',' ');		
+		
+		
+		
+		
+		
+		
+		
+		
